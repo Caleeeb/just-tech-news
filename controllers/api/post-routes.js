@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const sequelize = require('../../config/connection');
 const { Post, User, Comment, Vote } = require('../../models');
 
 // get all users
@@ -13,6 +14,7 @@ router.get('/', (req, res) => {
             'created_at',
             [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
         ],
+        order: [['created_at', 'DESC']],
         include: [
             {
                 model: Comment,
@@ -40,8 +42,13 @@ router.get('/:id', (req, res) => {
         where: {
             id: req.params.id
         },
-        attributes: ['id', 'post_url', 'title', 'created_at'[sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']],
-        // on why the nessted array for ordering https://stackoverflow.com/questions/22534339/sequelize-js-limit-and-sorting-bug
+        attributes: [
+            'id',
+            'post_url',
+            'title',
+            'created_at',
+            [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+        ],
         include: [
             {
                 model: Comment,
